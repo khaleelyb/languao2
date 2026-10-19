@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arabic Staircase</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1b2233;--mute:#6b7488;--line:#e3e7f0;--accent:#2f6df6;--accent-ink:#fff;--good:#14a05a;--bad:#d64545;
+--r-verb:#2f6df6;--r-noun:#e0872b;--r-part:#8a5cf6;--r-adj:#14a05a;--r-prep:#d6478f;--r-adv:#0f9fb0;--r-q:#d64545;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1420;--card:#171e2e;--ink:#eef1f8;--mute:#93a0b8;--line:#263049;--accent:#6c9cff;--accent-ink:#0b1020;}}
+:root[data-theme="dark"]{--bg:#0f1420;--card:#171e2e;--ink:#eef1f8;--mute:#93a0b8;--line:#263049;--accent:#6c9cff;--accent-ink:#0b1020;}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.app{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sub{color:var(--mute);font-size:13px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px}
+.chip{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;cursor:pointer;position:relative}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip.done::after{content:"✓";position:absolute;top:-4px;right:-4px;background:var(--good);color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px}
+.tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:12px}
+.tab{flex:1;border:0;background:none;color:var(--mute);padding:8px;border-radius:9px;font-weight:600;cursor:pointer;font-size:14px}
+.tab.on{background:var(--accent);color:var(--accent-ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.prompt{font-size:18px;font-weight:600;text-align:center;margin:4px 0 2px}
+.ar{font-family:Amiri,"Noto Naskh Arabic","Traditional Arabic",serif;direction:rtl}
+.opts{display:flex;gap:14px;font-size:13px;color:var(--mute);justify-content:center;margin-top:8px;flex-wrap:wrap}
+.opts label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.step{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);margin-bottom:8px;cursor:pointer;background:var(--bg)}
+.step .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--line);color:var(--mute);font-size:12px;display:grid;place-items:center;font-weight:700}
+.step .body{flex:1;min-width:0}
+.step .txt{font-size:28px;line-height:1.7;text-align:right}
+.step .txt b{color:var(--accent);font-weight:700}
+.step .tr,.step .add{font-size:13px;color:var(--mute)}
+.step .add{color:var(--accent)}
+.step.latest{border-color:var(--accent);animation:pop .35s ease}
+@keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.step.latest{animation:none}}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:120px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:12px;border-radius:12px;font-weight:600;cursor:pointer;font-size:15px}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default}
+.words{display:flex;flex-wrap:wrap;gap:12px 10px;direction:rtl;justify-content:center}
+.w{direction:ltr;text-align:center;cursor:pointer;padding:6px 8px;border-radius:12px}
+.w:active{background:var(--bg)}
+.tag{display:inline-block;font-size:11px;font-weight:700;color:#fff;padding:1px 8px;border-radius:6px;margin-bottom:4px}
+.w .ar{font-size:32px;line-height:1.5;display:block;direction:rtl}
+.w .tr{font-size:13px;color:var(--mute);display:block}
+.w .en{font-size:14px;display:block;font-weight:600}
+.slots{min-height:64px;display:flex;gap:8px;flex-wrap:wrap;direction:rtl;padding:10px;border:2px dashed var(--line);border-radius:12px;margin:10px 0;align-items:center}
+.tile{font-family:Amiri,"Noto Naskh Arabic",serif;font-size:26px;padding:4px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;direction:rtl}
+.tile.used{opacity:.25;pointer-events:none}
+.msg{text-align:center;font-weight:600;min-height:24px}
+.good{color:var(--good)}.bad{color:var(--bad)}
+.note{font-size:12px;color:var(--mute);text-align:center;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div><h1>Arabic Staircase</h1><div class="sub">Build each sentence one step at a time</div></div>
+    <div style="display:flex;gap:8px;align-items:center"><select id="vsel" aria-label="Voice" style="border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px;font:inherit;font-size:13px"><option value="ar-SA-HamedNeural">Hamed (SA, male)</option><option value="ar-SA-ZariyahNeural">Zariyah (SA, female)</option><option value="ar-EG-ShakirNeural">Shakir (EG, male)</option><option value="ar-EG-SalmaNeural">Salma (EG, female)</option><option value="ar-AE-HamdanNeural">Hamdan (UAE, male)</option><option value="ar-AE-FatimaNeural">Fatima (UAE, female)</option></select><button class="chip" id="theme" aria-label="Toggle theme">◐</button></div>
+  </header>
+  <div class="chips" id="chips"></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="view"></div>
+  <div class="note" id="vnote"></div>
+</div>
+<script>
+const ROLES={verb:["Verb","--r-verb"],noun:["Noun","--r-noun"],part:["Particle","--r-part"],adj:["Adjective","--r-adj"],prep:["Preposition","--r-prep"],adv:["Adverb","--r-adv"],q:["Question","--r-q"],subj:["Subject","--r-noun"]};
+// chunk: [arabic, transliteration, meaning, role]
+const S=[
+ {en:"I like to eat apples.",c:[["أُحِبُّ","uḥibbu","I like","verb"],["أَنْ","an","to","part"],["آكُلَ","ākula","eat","verb"],["التُّفَّاحَ","at-tuffāḥa","the apples","noun"]]},
+ {en:"I go to school every day.",c:[["أَذْهَبُ","adhhabu","I go","verb"],["إِلَى","ilā","to","prep"],["المَدْرَسَةِ","al-madrasati","the school","noun"],["كُلَّ يَوْمٍ","kulla yawmin","every day","adv"]]},
+ {en:"This is a very big house.",c:[["هَذَا","hādhā","this","subj"],["بَيْتٌ","baytun","a house","noun"],["كَبِيرٌ","kabīrun","big","adj"],["جِدًّا","jiddan","very","adv"]]},
+ {en:"I want to drink cold water.",c:[["أُرِيدُ","urīdu","I want","verb"],["أَنْ","an","to","part"],["أَشْرَبَ","ashraba","drink","verb"],["المَاءَ","al-māʼa","the water","noun"],["البَارِدَ","al-bārida","cold","adj"]]},
+ {en:"Do you speak Arabic?",c:[["هَلْ","hal","(question word)","q"],["تَتَكَلَّمُ","tatakallamu","you speak","verb"],["العَرَبِيَّةَ","al-ʿarabiyyata","Arabic","noun"]]},
+ {en:"It’s time to start a new day.",c:[["حَانَ","ḥāna","has come","verb"],["الوَقْتُ","al-waqtu","the time","noun"],["لِنَبْدَأَ","li-nabdaʼa","to start","verb"],["يَوْمًا","yawman","a day","noun"],["جَدِيدًا","jadīdan","new","adj"]]}
+];
+let si=0,mode="stair",step=0,showTr=true,showEn=true,voice=null,placed=[],shuf=[],done=new Set();
+try{done=new Set(JSON.parse(localStorage.getItem("arstair-done")||"[]"))}catch(e){}
+const $=s=>document.querySelector(s);
+const cur=()=>S[si];
+const phrase=(k,f=0)=>cur().c.slice(f,k).map(x=>x[0]).join(" ");
+const trans=k=>cur().c.slice(0,k).map(x=>x[1]).join(" ");
+
+// speech
+function pickVoice(){const v=speechSynthesis.getVoices();voice=v.find(x=>x.lang&&x.lang.toLowerCase().startsWith("ar"))||null;
+  $("#vnote").textContent=voice?"":"No Arabic voice found on this device. Install one in your system speech settings for audio."}
+if("speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+// Edge TTS via /api/tts (Vercel function), cached per phrase; falls back to browser voice
+const API="";let edgeVoice="ar-SA-HamedNeural",edgeOK=true,player=null,token=0;const cache=new Map();
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function getAudio(t,rate){
+  const pct=Math.round((rate-1)*100),key=edgeVoice+"|"+pct+"|"+t;
+  if(cache.has(key))return cache.get(key);
+  const r=await fetch(API+"/api/tts?"+new URLSearchParams({text:t,voice:edgeVoice,rate:(pct>=0?"+":"")+pct+"%"}));
+  if(!r.ok)throw new Error("tts "+r.status);
+  const u=URL.createObjectURL(await r.blob());cache.set(key,u);return u;
+}
+async function speak(t,times=1,rate=.8){
+  token++;const my=token;
+  if(player){player.pause();player=null}
+  if("speechSynthesis" in window)speechSynthesis.cancel();
+  if(edgeOK){
+    let u;
+    try{u=await getAudio(t,rate)}catch(e){edgeOK=false;$("#vnote").textContent="Edge TTS unavailable here, using the browser voice instead."}
+    if(u){
+      for(let i=0;i<times;i++){
+        if(my!==token)return;
+        await new Promise(res=>{const a=new Audio(u);player=a;a.onended=res;a.onerror=res;a.play().catch(res)});
+        await wait(350);
+      }
+      return;
+    }
+  }
+  if(my===token)browserSpeak(t,times,rate);
+}
+function browserSpeak(t,times=1,rate=.8){
+  if(!("speechSynthesis" in window))return;
+  speechSynthesis.cancel();let n=0;
+  const go=()=>{const u=new SpeechSynthesisUtterance(t);u.lang="ar-SA";if(voice)u.voice=voice;u.rate=rate;
+    u.onend=()=>{if(++n<times)setTimeout(go,350)};speechSynthesis.speak(u)};go();
+}
+
+function save(){try{localStorage.setItem("arstair-done",JSON.stringify([...done]))}catch(e){}}
+
+function renderChips(){
+  $("#chips").innerHTML=S.map((_,i)=>`<button class="chip ${i==si?"on":""} ${done.has(i)?"done":""}" data-i="${i}">${i+1}</button>`).join("");
+  $("#tabs").innerHTML=[["stair","Staircase"],["break","Breakdown"],["prac","Practice"]].map(([k,l])=>`<button class="tab ${mode==k?"on":""}" data-m="${k}">${l}</button>`).join("");
+}
+
+function opts(){return `<div class="opts"><label><input type="checkbox" id="oTr" ${showTr?"checked":""}> Transliteration</label><label><input type="checkbox" id="oEn" ${showEn?"checked":""}> Meaning</label></div>`}
+
+function stairView(){
+  const n=cur().c.length;let rows="";
+  for(let k=1;k<=step;k++){
+    const c=cur().c[k-1];
+    rows+=`<div class="step ${k==step?"latest":""}" data-k="${k}"><div class="n">${k}</div><div class="body">
+      <div class="txt ar">${phrase(k-1)} <b>${c[0]}</b></div>
+      ${showTr?`<div class="tr">${trans(k)}</div>`:""}
+      ${showEn?`<div class="add">+ ${c[2]}</div>`:""}</div></div>`;
+  }
+  const fin=step==n;
+  $("#view").innerHTML=`<div class="card"><div class="prompt">${showEn?cur().en:"Listen and build the sentence"}</div>${opts()}</div>
+  <div>${rows||'<div class="card sub" style="text-align:center">Tap “Next step” to start climbing.</div>'}</div>
+  <div class="row">
+    <button class="btn" id="reset">↺ Restart</button>
+    <button class="btn" id="rep" ${step?"":"disabled"}>🔁 Repeat ×3</button>
+    <button class="btn pri" id="next">${fin?(done.has(si)?"Next sentence ▸":"Mark learned ✓"):"Next step ▸"}</button>
+  </div>`;
+}
+
+function breakView(){
+  $("#view").innerHTML=`<div class="card"><div class="prompt">${cur().en}</div>${opts()}</div>
+  <div class="card"><div class="words">${cur().c.map((c,i)=>{const r=ROLES[c[3]];
+    return `<div class="w" data-i="${i}"><span class="tag" style="background:var(${r[1]})">${r[0]}</span>
+    <span class="ar">${c[0]}</span>${showTr?`<span class="tr">${c[1]}</span>`:""}${showEn?`<span class="en">${c[2]}</span>`:""}</div>`}).join("")}</div></div>
+  <div class="row"><button class="btn pri" id="all">🔊 Play full sentence</button></div>
+  <div class="note">Tap any word to hear it.</div>`;
+}
+
+function newPrac(){placed=[];shuf=cur().c.map((_,i)=>i).sort(()=>Math.random()-.5);if(shuf.every((v,i)=>v==i)&&shuf.length>1)shuf.push(shuf.shift())}
+function pracView(msg="",cls=""){
+  const c=cur().c;
+  $("#view").innerHTML=`<div class="card"><div class="prompt">${cur().en}</div><div class="sub" style="text-align:center">Tap the words in the right order</div>
+  <div class="slots">${placed.map(i=>`<span class="tile" data-un="${i}">${c[i][0]}</span>`).join("")}</div>
+  <div class="words" style="gap:8px">${shuf.map(i=>`<span class="tile ${placed.includes(i)?"used":""}" data-p="${i}">${c[i][0]}</span>`).join("")}</div>
+  <div class="msg ${cls}">${msg}</div></div>
+  <div class="row"><button class="btn" id="shuf">↺ Shuffle</button><button class="btn pri" id="chk" ${placed.length==c.length?"":"disabled"}>Check</button></div>`;
+}
+
+function render(){
+  renderChips();
+  if(mode=="stair")stairView();else if(mode=="break")breakView();else pracView();
+}
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button,.step,.w,.tile,input");if(!t)return;
+  if(t.id=="theme"){const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme=="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=dark?"light":"dark";return}
+  if(t.dataset.i!==undefined&&t.classList.contains("chip")){si=+t.dataset.i;step=0;newPrac();render();return}
+  if(t.dataset.m){mode=t.dataset.m;if(mode=="prac")newPrac();render();return}
+  if(t.id=="oTr"){showTr=t.checked;render();return}
+  if(t.id=="oEn"){showEn=t.checked;render();return}
+  if(t.id=="reset"){step=0;render();return}
+  if(t.id=="rep"){speak(phrase(step),3);return}
+  if(t.id=="next"){const n=cur().c.length;
+    if(step<n){step++;render();speak(phrase(step),2)}
+    else{done.add(si);save();if(si<S.length-1){si++;step=0;newPrac()}render()}return}
+  if(t.classList.contains("step")){speak(phrase(+t.dataset.k));return}
+  if(t.classList.contains("w")){speak(cur().c[+t.dataset.i][0]);return}
+  if(t.id=="all"){speak(phrase(cur().c.length));return}
+  if(t.id=="shuf"){newPrac();pracView();return}
+  if(t.dataset.p!==undefined){const i=+t.dataset.p;placed.push(i);speak(cur().c[i][0]);pracView();return}
+  if(t.dataset.un!==undefined){placed=placed.filter(x=>x!=+t.dataset.un);pracView();return}
+  if(t.id=="chk"){const ok=placed.every((v,i)=>v==i);
+    if(ok){done.add(si);save();speak(phrase(cur().c.length));pracView("✓ Correct! "+trans(cur().c.length),"good");renderChips()}
+    else pracView("Not quite. Try again.","bad")}
+});
+$("#vsel").addEventListener("change",e=>{edgeVoice=e.target.value;speak(phrase(cur().c.length))});
+render();
+</script>
+</body>
+</html>
