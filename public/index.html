@@ -90,7 +90,7 @@ const trans=k=>cur().c.slice(0,k).map(x=>x[1]).join(" ");
 
 // speech
 function pickVoice(){const v=speechSynthesis.getVoices();voice=v.find(x=>x.lang&&x.lang.toLowerCase().startsWith("ar"))||null;
-  $("#vnote").textContent=voice?"":"No Arabic voice found on this device. Install one in your system speech settings for audio."}
+}
 if("speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
 // Edge TTS via /api/tts (Vercel function), cached per phrase; falls back to browser voice
 const API="";let edgeVoice="ar-SA-HamedNeural",edgeOK=true,player=null,token=0;const cache=new Map();
@@ -108,7 +108,7 @@ async function speak(t,times=1,rate=.8){
   if("speechSynthesis" in window)speechSynthesis.cancel();
   if(edgeOK){
     let u;
-    try{u=await getAudio(t,rate)}catch(e){edgeOK=false;$("#vnote").textContent="Edge TTS unavailable here, using the browser voice instead."}
+    try{u=await getAudio(t,rate)}catch(e){edgeOK=false;$("#vnote").textContent=voice?"Edge TTS unavailable, using your device’s Arabic voice.":"Edge TTS is not responding and this device has no Arabic voice. Check that /api/tts works on your deployment."}
     if(u){
       for(let i=0;i<times;i++){
         if(my!==token)return;
